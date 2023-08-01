@@ -1,0 +1,9 @@
+---
+cloudflare:
+  url: https://www.cloudflare.com/ips-v4
+  directory: /etc/haproxy/cloudflare
+  script_path: /etc/haproxy/cloudflare/cloudflare_ips-v4.lst
+
+packages:
+  iptable_services: 1.8.8
+  ipset: 7.11

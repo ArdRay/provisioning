@@ -1,0 +1,58 @@
+---
+- name: create dir - /opt/services
+  ansible.builtin.file:
+    path: /opt/services
+    state: directory
+
+- name: create dir - /opt/services/files
+  ansible.builtin.file:
+    path: /opt/services/files
+    state: directory
+
+- name: create dir - /opt/services/shared
+  ansible.builtin.file:
+    path: /opt/services/shared
+    state: directory
+
+- name: create dir - /opt/services/templates
+  ansible.builtin.file:
+    path: /opt/services/templates
+    state: directory
+
+# Static files
+- name: Copy files over
+  copy:
+    src: "{{ playbook_dir }}/../files/docker_services/{{ inventory_hostname }}/"
+    dest: /opt/services/files/
+  notify:
+    - docker_services_reload
+
+# Templates
+- name: Copy templates over
+  template:
+    src: "{{ item }}"
+    dest: "/opt/services/templates/{{ item | basename | regex_replace('.j2$','')}}"
+  with_fileglob:
+    - "{{ playbook_dir }}/../templates/docker_services/{{ inventory_hostname }}/*.j2"
+  notify:
+    - docker_services_reload
+
+# Shared configurations
+- name: Copy shared config
+  copy:
+    src: "{{ playbook_dir }}/../files/docker_services/{{ item }}"
+    dest: "/opt/services/shared/{{ item }}"
+  loop: "{{ shared_files | list }}"
+  when: shared_files is defined
+  notify:
+    - docker_services_reload
+
+- name: Copy docker-compose.yml
+  vars:
+    local_file: "{{ playbook_dir }}/../templates/docker_compose/{{ inventory_hostname }}/docker-compose.yml"
+  template:
+    src: "{{ playbook_dir }}/../templates/docker_compose/{{ inventory_hostname }}/docker-compose.yml"
+    dest: /opt/services/docker-compose.yml
+  when: lookup( 'file', local_file, errors='ignore' )
+  notify:
+    - docker_services_reload

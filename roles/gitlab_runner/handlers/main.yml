@@ -1,0 +1,9 @@
+---
+- name: restart gitlab-runner.service
+  ansible.builtin.service:
+    name: gitlab-runner.service
+    state: restarted
+
+- name: dnf update_cache
+  ansible.builtin.dnf:
+    update_cache: true

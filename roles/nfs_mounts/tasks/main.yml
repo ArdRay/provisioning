@@ -1,0 +1,12 @@
+---
+- block:
+  - name: include 01-setup_volumes.yml
+    include_tasks: 01-setup_volumes.yml
+  - name: include 02-mount_volumes.yml
+    include_tasks: 02-mount_volumes.yml
+  - name: include 03-create_subfolders.yml
+    include_tasks: 03-create_subfolders.yml
+    loop: "{{ lookup('vars', inventory_hostname).nfs_mounts | list }}"
+    loop_control:
+      loop_var: nfs_mounts
+  when: lookup('vars', inventory_hostname).nfs_mounts is defined

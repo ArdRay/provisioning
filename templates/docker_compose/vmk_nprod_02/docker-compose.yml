@@ -1,0 +1,204 @@
+## Managed by Ansible
+## Filename: templates/docker_compose/vmk_nprod_02/docker-compose.yml
+
+version: '3.8'
+services:
+  haproxy:
+    image: docker.io/library/haproxy:2.9-dev-bullseye
+    networks:
+      - media_automation
+      - vpn
+    restart: always
+    ports:
+      - "80:80"
+      - "443:443"
+      - "5432:5432"
+      - "9090:9090"
+    volumes:
+      - /opt/services/files/haproxy.cfg:/usr/local/etc/haproxy/haproxy.cfg:ro
+      - /mnt/prod_02_services/certs:/usr/local/etc/certs:ro
+  
+  vpn:
+    image: qmcgaw/gluetun:v3.35
+    hostname: vpn.internal
+    networks:
+      - vpn
+    cap_add:
+      - NET_ADMIN
+    security_opt:
+      - no-new-privileges:true
+    restart: always
+    environment:
+      - OPENVPN_USER={{ openvpn_user }}
+      - OPENVPN_PASSWORD={{ openvpn_password }}
+      - VPN_SERVICE_PROVIDER=protonvpn
+      - SERVER_NAMES=PL#21,AT#17,CZ#1,BE#13
+      - OPENVPN_IPV6=off
+      - DOT=off
+      - SHADOWSOCKS=off
+      - HTTPPROXY=off
+      - FIREWALL=off
+      - FIREWALL_DEBUG=off
+      - TZ=Europe/Berlin
+      - PUID=1000
+      - PGUID=1000
+      - HEALTH_TARGET_ADDRESS=google.com
+      - HEALTH_VPN_DURATION_INITIAL=10s
+      - HEALTH_VPN_DURATION_ADDITION=5s
+    cpus: 3
+    mem_limit: 512m
+    mem_reservation: 128m
+  
+  downloader:
+    image: ghcr.io/linuxserver/qbittorrent:4.5.4
+    network_mode: service:vpn
+    depends_on:
+      vpn:
+        condition: service_healthy
+    restart: always
+    environment:
+      - PUID=1000
+      - PGID=1000
+      - TZ=Europe/Berlin
+      - UMASK=022
+      - WEBUI_PORT=8080
+    volumes:
+      - /mnt/download_cache:/downloads
+      - /mnt/prod_02_services/downloader_service:/config
+    healthcheck:
+      test: curl -fSs http://127.0.0.1:8080 || exit 1
+      interval: 5s
+      timeout: 10s
+    cpus: 3
+    mem_limit: 2048m
+    mem_reservation: 512m
+
+  sonarr:
+    image: ghcr.io/linuxserver/sonarr:3.0.10
+    networks:
+      - media_automation
+      - vpn
+    depends_on:
+      downloader:
+        condition: service_healthy
+    environment:
+      - PUID=1000
+      - PGID=1000
+      - TZ=Europe/Berlin
+      - UMASK=022
+    volumes:
+      - /mnt/prod_02_services/sonarr_service:/config
+      - /mnt/series:/tv
+      - /mnt/download_cache:/downloads
+    healthcheck:
+      test: curl -fSs http://127.0.0.1:8989 || exit 1
+      interval: 5s
+      timeout: 10s
+    restart: always
+    cpus: 2
+    mem_limit: 512m
+    mem_reservation: 128m
+
+  radarr:
+    image: ghcr.io/linuxserver/radarr:4.5.2
+    networks:
+      - media_automation
+      - vpn
+    depends_on:
+      jackett:
+        condition: service_healthy
+      downloader:
+        condition: service_healthy
+    environment:
+      - PUID=1000
+      - PGID=1000
+      - TZ=Europe/Berlin
+      - UMASK=022
+    volumes:
+      - /mnt/prod_02_services/radarr_service:/config
+      - /mnt/movies:/movies
+      - /mnt/download_cache:/downloads
+    healthcheck:
+      test: curl -fSs http://127.0.0.1:7878 || exit 1
+      interval: 5s
+      timeout: 10s
+    restart: always
+    cpus: 4
+    mem_limit: 2048m
+    mem_reservation: 512m
+
+  jackett:
+    image: ghcr.io/linuxserver/jackett:0.21.356
+    networks:
+      - media_automation
+      - vpn
+    environment:
+      - PUID=1000
+      - PGID=1000
+      - TZ=Europe/Berlin
+    volumes:
+      - /mnt/download_cache:/downloads
+      - /mnt/prod_02_services/jackett_service:/config
+    healthcheck:
+      test: curl -fSs http://127.0.0.1:9117 || exit 1
+      interval: 5s
+      timeout: 10s
+    restart: always
+    cpus: 2
+    mem_limit: 512m
+    mem_reservation: 128m
+
+  emby:
+    image: ghcr.io/linuxserver/emby:4.7.13
+    networks:
+      - media_automation
+    environment:
+      PUID: 1000
+      PGID: 1000
+      TZ: Europe/Berlin
+    volumes:
+      - /mnt/prod_02_services/emby_service/config:/config
+      - /mnt/prod_02_services/emby_service/persistent:/persistent
+      - /mnt/movies:/data/movies
+      - /mnt/series:/data/tvshows
+    healthcheck:
+     test: curl -fSs http://127.0.0.1:8096 || exit 1
+     interval: 5s
+     timeout: 10s
+    restart: always
+    cpus: 6
+    mem_limit: 8192m
+    mem_reservation: 512m
+
+  flared:
+    image: ghcr.io/flaresolverr/flaresolverr:latest
+    network_mode: service:vpn
+    environment: 
+      - LOG_LEVEL=info
+      - TZ=Europe/London
+    restart: unless-stopped
+
+  dns:
+    image: docker.io/spx01/blocky:v0.21
+    networks:
+      - dns
+    ports:
+      - "53:53/tcp"
+      - "53:53/udp"
+      - "4000:4000"
+    volumes:
+      - /opt/services/shared/dns.yml:/app/config.yml
+    environment:
+      - TZ=Europe/Berlin
+    restart: always
+    cpus: 0.5
+    mem_limit: 128m
+    mem_reservation: 64m
+
+networks:
+  media_automation:
+    driver: bridge
+  vpn:
+    driver: bridge
+  dns:
+    driver: bridge

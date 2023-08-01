@@ -1,0 +1,9 @@
+---
+- name: include 01-hostname.yml
+  include_tasks: 01-hostname.yml
+- name: include 02-networking.yml
+  include_tasks: 02-networking.yml
+- name: include 03-packages.yml
+  include_tasks: 03-packages.yml
+- name: include 04-ansible_pull.yml
+  include_tasks: 04-ansible_pull.yml

@@ -1,0 +1,53 @@
+---
+- name: list certificates - haproxy cert
+  ansible.builtin.shell: "ls -1 {{ lookup('vars', inventory_hostname).domain_certificates.destination }}"
+  register: haproxy_certificates
+  changed_when: false
+
+- name: remove unmanaged certificates - haproxy cert
+  ansible.builtin.file:
+    path: "{{ lookup('vars', inventory_hostname).domain_certificates.destination }}/{{ item }}"
+    state: absent
+  with_items: 
+    - "{{ haproxy_certificates.stdout_lines }}"
+  when: item not in lookup('vars', inventory_hostname).domain_certificates.fqdns
+
+- name: Remove unmanaged letsencrypt certificate data
+  block:
+    - name: |
+        list certificates - letsencrypt certs
+        DOC: Return lines of directories in letsencrypt_live_directory,
+            not the whole path, only the cert directory.
+      ansible.builtin.shell: "ls -1d /etc/letsencrypt/archive/*/ | cut -d'/' -f5"
+      register: letsencrypt_certificates
+      changed_when: false
+
+    - name: |
+        remove unmanaged certificates - letsencrypt certs - live
+        DOC: Add / at the end to remove the entire directory.
+      ansible.builtin.file:
+        path: "{{ letsencrypt_live_directory }}{{ item }}/"
+        state: absent
+      with_items: 
+        - "{{ letsencrypt_certificates.stdout_lines }}"
+      when: item not in lookup('vars', inventory_hostname).domain_certificates.fqdns
+    
+    - name: |
+        remove unmanaged certificates - letsencrypt certs - archive
+        DOC: Add / at the end to remove the entire directory.
+      ansible.builtin.file:
+        path: "{{ letsencrypt_archive_directory }}{{ item }}/"
+        state: absent
+      with_items: 
+        - "{{ letsencrypt_certificates.stdout_lines }}"
+      when: item not in lookup('vars', inventory_hostname).domain_certificates.fqdns
+    
+    - name: |
+        remove unmanaged certificates - letsencrypt certs - renewal
+        DOC: Add / at the end to remove the entire directory.
+      ansible.builtin.file:
+        path: "{{ letsencrypt_renewal_directory }}{{ item }}.conf"
+        state: absent
+      with_items: 
+        - "{{ letsencrypt_certificates.stdout_lines }}"
+      when: item not in lookup('vars', inventory_hostname).domain_certificates.fqdns

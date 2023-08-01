@@ -1,0 +1,131 @@
+## Managed by Ansible
+## Filename: templates/docker_compose/vmk_nprod_01/docker-compose.yml
+
+version: '3.8'
+services:
+  haproxy:
+    image: docker.io/library/haproxy:2.9-dev-bullseye
+    networks:
+      - monitoring
+      - postgres_portfolio
+      - dns
+    restart: always
+    ports:
+      - "80:80"
+      - "443:443"
+      - "5432:5432"
+      - "9090:9090"
+    volumes:
+      - /opt/services/files/haproxy.cfg:/usr/local/etc/haproxy/haproxy.cfg:ro
+      - /mnt/prod_01_services/certs:/usr/local/etc/certs:ro
+
+  postgres_portfolio:
+    image: docker.io/postgres:16beta1-alpine3.18
+    networks:
+      - postgres_portfolio
+    restart: always
+    volumes:
+      - /mnt/prod_01_services/postgres_portfolio_service:/var/lib/postgresql/data
+    environment:
+      - PGDATA=/var/lib/postgresql/data/pgdata
+      - POSTGRES_USER=postgres
+      - POSTGRES_DB=portfolio
+      - POSTGRES_PASSWORD={{ compose_postgres_portfolio_password }}
+    cpus: 2
+    mem_limit: 512m
+    mem_reservation: 64m
+
+  prometheus:
+    image: docker.io/prom/prometheus:v2.44.0
+    networks:
+      - monitoring
+      - dns
+    command:
+      - '--config.file=/etc/prometheus/prometheus.yml'
+      - '--storage.tsdb.path=/prometheus'
+      - '--storage.tsdb.retention.time=120d'
+    volumes:
+      - /opt/services/files/prometheus.yml:/etc/prometheus/prometheus.yml:ro
+      - /mnt/prod_01_services/prometheus_service:/prometheus
+    environment:
+      - TZ=Europe/Berlin
+    healthcheck:
+      test: wget --no-verbose --tries=1 --spider http://localhost:9090 || exit 1
+      interval: 15s
+      timeout: 10s
+      start_period: 60s
+    restart: always
+    cpus: 1
+    mem_limit: 512m
+    mem_reservation: 256m
+
+  uptime:
+    image: louislam/uptime-kuma:1
+    networks:
+      - monitoring
+    volumes:
+      - /mnt/prod_01_services/uptime_service:/app/data
+    restart: always
+    cpus: 1
+    mem_limit: 512m
+    mem_reservation: 256m
+
+  dns:
+    image: docker.io/spx01/blocky:v0.21
+    networks:
+      - dns
+    ports:
+      - "53:53/tcp"
+      - "53:53/udp"
+    volumes:
+      - /opt/services/shared/dns.yml:/app/config.yml
+    environment:
+      - TZ=Europe/Berlin
+    restart: always
+    cpus: 0.5
+    mem_limit: 128m
+    mem_reservation: 64m
+
+  grafana:
+    image: docker.io/grafana/grafana:10.0.0
+    networks:
+      - monitoring
+      - postgres_portfolio
+    depends_on:
+      prometheus:
+        condition: service_healthy
+    volumes:
+      - /mnt/prod_01_services/grafana_service:/var/lib/grafana
+      - /opt/services/templates/grafana_ldap.toml:/config/ldap.toml:ro
+    environment:
+      - GF_SERVER_DOMAIN=grafana.int.mxard.cloud
+      - GF_ANALYTICS_REPORTING_ENABLED=false
+      - GF_SECURITY_DISABLE_INITIAL_ADMIN_CREATION=false
+      - GF_ADMIN_USER=admin
+      - GF_ADMIN_PASSWORD={{ grafana_admin_password }}
+      - GF_USERS_ALLOW_SIGN_UP=false
+      - GF_AUTH_ANONYMOUS_ORG_NAME=Homelab
+      - GF_AUTH_ANONYMOUS_HIDE_VERSION=true
+      - GF_AUTH_LDAP_ENABLED=true
+      - GF_AUTH_LDAP_CONFIG_FILE=/config/ldap.toml
+      - GF_LOG_LEVEL=warn
+      - GF_PANELS_DISABLE_SANITIZE_HTML=true
+      - GF_INSTALL_PLUGINS=grafana-piechart-panel,grafana-clock-panel,grafana-simple-json-datasource
+      - GF_PLUGINS_APP_TLS_SKIP_VERIFY_INSECURE=true
+    healthcheck:
+      test: wget --no-verbose --tries=1 --spider http://localhost:3000 || exit 1
+      interval: 5s
+      timeout: 10s
+    restart: always
+    cpus: 2
+    mem_limit: 512m
+    mem_reservation: 128m
+
+networks:
+  postgres_portfolio:
+    driver: bridge
+    internal: true
+  dns:
+    driver: bridge
+  monitoring:
+    driver: bridge

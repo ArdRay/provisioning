@@ -1,0 +1,6 @@
+---
+- block:
+  - name: include 01-install_docker.yml
+    include_tasks: 01-install_docker.yml
+  - name: include 02-enable_service.yml
+    include_tasks: 02-enable_service.yml

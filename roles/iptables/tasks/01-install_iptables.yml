@@ -1,0 +1,45 @@
+---
+- name: Replace firewalld with iptables-services
+  block:
+    - name: Install iptables-services
+      ansible.builtin.package:
+        name:
+          - "iptables-services = {{ packages.iptable_services }}"
+        state: present
+      when: packages.iptable_services is defined
+      notify:
+        - restart docker.service
+    - name: Ensure firewalld is disabled and stopped
+      systemd: 
+        name: firewalld
+        enabled: false
+        state: stopped
+      notify:
+        - restart docker.service
+    - name: Ensure iptables.service is enabled and running
+      systemd: 
+        name: iptables
+        enabled: true
+        state: started
+      notify:
+        - restart docker.service
+  
+
+- name: upload file - /etc/sysconfig/iptables-config
+  ansible.builtin.copy:
+    src: iptables-config
+    dest: /etc/sysconfig/iptables-config
+  notify:
+    - restart iptables.service
+    - reload iptables_docker_reload
+
+- name: upload iptables file - /etc/sysconfig/iptables
+  vars:
+    local_file: "{{ playbook_dir }}/../files/iptables/iptables@{{ inventory_hostname }}"
+  ansible.builtin.copy:
+    src: "{{ playbook_dir }}/../files/iptables/iptables@{{ inventory_hostname }}"
+    dest: /etc/sysconfig/iptables
+    validate: /usr/sbin/iptables-restore --test %s
+  when: lookup( 'file', local_file, errors='ignore' )
+  notify:
+    - reload iptables_docker_reload

@@ -1,0 +1,11 @@
+---
+
+- name: include node_exporter
+  hosts:
+    - services_nprod
+    - runners_prod
+  become: true
+  any_errors_fatal: true
+  gather_facts: true
+  roles:
+    - node_exporter

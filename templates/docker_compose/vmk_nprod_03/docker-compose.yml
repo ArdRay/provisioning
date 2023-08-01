@@ -1,0 +1,98 @@
+## Managed by Ansible
+## Filename: templates/docker_compose/vmk_nprod_03/docker-compose.yml
+
+version: '3.8'
+services:
+  haproxy:
+    image: docker.io/library/haproxy:2.9-dev-bullseye
+    networks:
+      - bitcoin
+    restart: always
+    ports:
+      - "443:443"
+      - "9090:9090"
+    volumes:
+      - /opt/services/files/haproxy.cfg:/usr/local/etc/haproxy/haproxy.cfg:ro
+      - /mnt/prod_03_services/certs:/usr/local/etc/certs:ro
+
+  bitcoin:
+    image: lncm/bitcoind:v25.0
+    hostname: bitcoin.internal
+    command: -conf=/data/bitcoin.conf
+    networks:
+      - bitcoin
+      - tor
+    depends_on:
+      tor_socks5:
+        condition: service_started
+    volumes:
+      - /mnt/timechain/bitcoin:/data/.bitcoin
+      - /opt/services/files/bitcoin.conf:/data/bitcoin.conf
+    restart: always
+    healthcheck:
+      test: ["CMD", "bitcoin-cli", "-getinfo"]
+    cpus: 6
+    mem_limit: 16384m
+    mem_reservation: 4096m
+
+  electrs:
+    image: getumbrel/electrs:v0.9.14
+    hostname: electrs.internal
+    user: 1000:1000
+    volumes:
+      - /mnt/timechain/bitcoin:/data/.bitcoin:ro
+      - /mnt/timechain/electrs:/data
+    networks:
+      - bitcoin
+    ports:
+      - "4224:4224"
+    environment:
+      ELECTRS_DB_DIR: /data
+      ELECTRS_NETWORK: bitcoin
+      ELECTRS_DAEMON_RPC_ADDR: bitcoin.internal:8332
+      ELECTRS_DAEMON_P2P_ADDR: bitcoin.internal:8333
+      ELECTRS_ELECTRUM_RPC_ADDR: 0.0.0.0:50001
+      ELECTRS_MONITORING_ADDR: 0.0.0.0:4224
+      ELECTRS_LOG_FILTERS: INFO
+    depends_on:
+      bitcoin:
+        condition: service_healthy
+    restart: always
+    cpus: 4
+    mem_limit: 4096m
+    mem_reservation: 1024m
+
+  tor_socks5:
+    image: peterdavehello/tor-socks-proxy:latest
+    hostname: tor_socks5.internal
+    networks:
+      - tor
+    restart: always
+    cpus: 1
+    mem_limit: 512m
+    mem_reservation: 128m
+
+  dns:
+    image: docker.io/spx01/blocky:v0.21
+    networks:
+      - dns
+    ports:
+      - "53:53/tcp"
+      - "53:53/udp"
+      - "4000:4000"
+    volumes:
+      - /opt/services/shared/dns.yml:/app/config.yml
+    environment:
+      - TZ=Europe/Berlin
+    restart: always
+    cpus: 0.5
+    mem_limit: 128m
+    mem_reservation: 64m
+
+networks:
+  bitcoin:
+    driver: bridge
+  tor:
+    driver: bridge
+  dns:
+    driver: bridge

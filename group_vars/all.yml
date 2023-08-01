@@ -1,0 +1,256 @@
+---
+
+## Hosts definition
+vmk_nprod_01:
+  hostname: "vmk-nprod-01"
+  network:
+    - conn_name: "ens18"
+      ifname: "ens18"
+      type: "ethernet"
+      method4: "manual"
+      ip4: "10.10.2.11/24"
+      gw4: "10.10.2.1"
+      method6: "disabled"
+      state: "present"
+      autoconnect: true
+  domain_certificates:
+    destination: "/mnt/prod_01_services/certs"
+    fqdns:
+      - "grafana.int.mxard.cloud"
+      - "prometheus.int.mxard.cloud"
+      - "uptime.int.mxard.cloud"
+  install_iptables:
+    docker_support: true
+    cloudflare_support: true
+  nfs_mounts:
+    - dataset: "application_data/prod_01_services"
+      dataset_mount_source: "/mnt/application_data/prod_01_services"
+      dataset_mount_destination: "/mnt/prod_01_services"
+      dataset_state: "mounted"
+      create_subfolders:
+        - /mnt/prod_01_services/certs
+        - /mnt/prod_01_services/postgres_portfolio_service
+        - /mnt/prod_01_services/prometheus_service
+        - /mnt/prod_01_services/grafana_service
+        - /mnt/prod_01_services/uptime_service
+
+vmk_nprod_02:
+  hostname: "vmk-nprod-02"
+  network:
+    - conn_name: "ens18"
+      ifname: "ens18"
+      type: "ethernet"
+      method4: "manual"
+      ip4: "10.10.2.12/24"
+      gw4: "10.10.2.1"
+      method6: "disabled"
+      state: "present"
+      autoconnect: true
+  domain_certificates:
+    destination: "/mnt/prod_02_services/certs"
+    fqdns:
+      - "downloader.int.mxard.cloud"
+      - "series.int.mxard.cloud"
+      - "movies.int.mxard.cloud"
+      - "jaeckli.int.mxard.cloud"
+      - "emby.int.mxard.cloud"
+  install_iptables:
+    docker_support: true
+    cloudflare_support: true
+  nfs_mounts:
+    - dataset: "application_data/prod_02_services"
+      dataset_mount_source: "/mnt/application_data/prod_02_services"
+      dataset_mount_destination: "/mnt/prod_02_services"
+      dataset_state: "mounted"
+      create_subfolders:
+        - /mnt/prod_02_services/certs
+        - /mnt/prod_02_services/downloader_service
+        - /mnt/prod_02_services/sonarr_service
+        - /mnt/prod_02_services/radarr_service
+        - /mnt/prod_02_services/jackett_service
+        - /mnt/prod_02_services/emby_service
+        - /mnt/prod_02_services/emby_service/config
+        - /mnt/prod_02_services/emby_service/persistent
+    - dataset: "download_cache/qbittorrent_cache"
+      dataset_mount_source: "/mnt/download_cache/qbittorrent_cache"
+      dataset_mount_destination: "/mnt/download_cache"
+      dataset_state: "mounted"
+    - dataset: "hdd_raidz1/series"
+      dataset_mount_source: "/mnt/hdd_raidz1/series"
+      dataset_mount_destination: "/mnt/series"
+      dataset_state: "mounted"
+    - dataset: "hdd_raidz1/movies"
+      dataset_mount_source: "/mnt/hdd_raidz1/movies"
+      dataset_mount_destination: "/mnt/movies"
+      dataset_state: "mounted"
+
+vmk_nprod_03:
+  hostname: "vmk-nprod-03"
+  network:
+    - conn_name: "ens18"
+      ifname: "ens18"
+      type: "ethernet"
+      method4: "manual"
+      ip4: "10.10.2.13/24"
+      gw4: "10.10.2.1"
+      method6: "disabled"
+      state: "present"
+      autoconnect: true
+  install_iptables:
+    docker_support: true
+    cloudflare_support: true
+  domain_certificates:
+    destination: "/mnt/prod_03_services/certs"
+    fqdns:
+      - "electrs.int.mxard.cloud"
+  nfs_mounts:
+    - dataset: "application_data/prod_03_services"
+      dataset_mount_source: "/mnt/application_data/prod_03_services"
+      dataset_mount_destination: "/mnt/prod_03_services"
+      dataset_state: "mounted"
+      create_subfolders:
+        - /mnt/prod_03_services/certs
+    - dataset: "bitcoin_timechain/data"
+      dataset_mount_source: "/mnt/bitcoin_timechain/data"
+      dataset_mount_destination: "/mnt/timechain"
+      dataset_state: "mounted"
+      create_subfolders:
+        - /mnt/timechain/bitcoin
+        - /mnt/timechain/electrs
+
+vmk_nprod_04:
+  hostname: "vmk-nprod-04"
+  network:
+    - conn_name: "ens18"
+      ifname: "ens18"
+      type: "ethernet"
+      method4: "manual"
+      ip4: "10.10.2.14/24"
+      gw4: "10.10.2.1"
+      method6: "disabled"
+      state: "present"
+      autoconnect: true
+  install_iptables:
+    docker_support: true
+    cloudflare_support: true
+  domain_certificates:
+    destination: "/mnt/prod_04_services/certs"
+    fqdns:
+      - "dashboard.int.mxard.cloud"
+      - "cloud.int.mxard.cloud"
+  nfs_mounts:
+    - dataset: "application_data/prod_04_services"
+      dataset_mount_source: "/mnt/application_data/prod_04_services"
+      dataset_mount_destination: "/mnt/prod_04_services"
+      dataset_state: "mounted"
+      create_subfolders:
+        - /mnt/prod_04_services/certs
+        - /mnt/prod_04_services/dashboard_service
+        - /mnt/prod_04_services/nextcloud_service
+        - /mnt/prod_04_services/nextcloud_db_service
+    - dataset: "hdd_raidz1/nextcloud"
+      dataset_mount_source: "/mnt/hdd_raidz1/nextcloud"
+      dataset_mount_destination: "/mnt/nextcloud"
+      dataset_state: "mounted"
+
+vmk_run_01:
+  hostname: "vmk-run-01"
+  network:
+    - conn_name: "ens18"
+      ifname: "ens18"
+      type: "ethernet"
+      method4: "manual"
+      ip4: "10.10.2.9/24"
+      gw4: "10.10.2.1"
+      method6: "disabled"
+      state: "present"
+      autoconnect: true
+  install_iptables:
+    docker_support: true
+
+
+## Docker Services - nprod_01
+ldap_bind_password: !vault |
+          $ANSIBLE_VAULT;1.1;AES256
+          36353236356431316238306464333964636138643939313564373635303837333936646338653239
+          3339393764363730313965333738366563306437306237320a623737386666646131633932313361
+          37366530666634326166636363306362313930616339613264363062646138393334626565346336
+          6338316132613433620a326562663236646337346466353438323366636466366430356335653561
+          37313163313834616263373234663466616130646438343663653662306163613231393634383965
+          3932333335393832646535653062653835303139333137303734
+
+compose_postgres_portfolio_password: !vault |
+          $ANSIBLE_VAULT;1.1;AES256
+          65373033363332666434356334313965346438373064346231303039373538303335336338303366
+          3238363134376165666131376331346164393838613264640a616239656635396338333738373566
+          64343865393939653439363066366134316338643631623232623763643563646535373536363437
+          3039613238306164300a636462353262616262643361653066393764636430333530383530303464
+          63343865623732633339356338393266333039623937653031303366663232613137653539313866
+          64386336643938363839653830343534363065396265613533326138623134303562616366626230
+          326631373034613563623136643762366331
+
+grafana_admin_password: !vault |
+          $ANSIBLE_VAULT;1.1;AES256
+          30376134303737646661666333626132333031613131613962646263323230303266633930633839
+          3131323263343533316462366633393264383533623363380a643739306566666336303464616363
+          35613230646233623637333232396361653666353034613230333833646566323237346130663835
+          3565623932666331310a623338613664343435633537613230383562613331396662393165626561
+          62323263356262623634346630613132313930363866336264383566353638343030
+
+## Docker Services - nprod_02
+
+openvpn_user: !vault |
+          $ANSIBLE_VAULT;1.1;AES256
+          30323038313136626132323163623463333363646262363066323431663237313538363235393732
+          6162373334316539613532656539316634653932353665310a333931363533363032366264313937
+          31663861643630323638343734666435303437323536333838646334653639646232383663623332
+          6333313161343463650a356665353964353934396136623263303637616530303263616663303431
+          37353534303731346666616536646664386363383036663431653035656139326163
+
+openvpn_password: !vault |
+          $ANSIBLE_VAULT;1.1;AES256
+          30393562306632633532616139333539356662633135643735656334623534623465393034363130
+          3138633365623362316430613363386262393364623862390a396431303039303665303338386135
+          62656639373331633731613665326331303366653435313930303534623735663564346530633739
+          6665626234643663330a353937653466656265313733613335313439366336373234356536393735
+          33633362313061353362656333303464373832306339306639353037366264386365
+
+
+## Docker Services - nprod_04
+
+nextcloud_db_password: !vault |
+          $ANSIBLE_VAULT;1.1;AES256
+          61356664343733626130653231386663386264626532313964643666316532653761373336663764
+          6133653765626139343431616564343161303132666565330a343838623662326362616337303061
+          63663963383038633130343265303038323333623930386239316630633363633736366465656462
+          6339626334333435320a363030633038633661656430303534656463316139336431383534623435
+          66393463383731306539643430396164326436363261646136616239313233326262
+
+nextcloud_db_root_password: !vault |
+          $ANSIBLE_VAULT;1.1;AES256
+          63316639623439643837376464326534356465333965373962373137616164666662333831356562
+          3337633435383866616466666638633430356663616666320a326562306166656334333533336438
+          36373631326338363662316461663933666635323934633865653930333166653339353863306235
+          6463343166623765320a633461363337663134313361323262623262616439393164316164363461
+          33313461373130343830353437626265366634323535643839323432386134336163
+
+## Runner - run_01
+
+runner_1_id: !vault |
+          $ANSIBLE_VAULT;1.1;AES256
+          33343065643830313630323165376165613738316336343736353239373735386366363963643634
+          6632653234363433666235316334613932366362333238620a613932646337313965313838663033
+          66313839306566316533656239306632613036336137396130663332373135323166366265393233
+          3037383635373061380a373333633165653732366132663761613432666638613261313238373664
+          6233
+
+runner_1_token: !vault |
+          $ANSIBLE_VAULT;1.1;AES256
+          66633465326561646238343130373133313334356330313435303331393065333061343065633134
+          6134343139613231323537323639646637346136313162380a333038663838636438346134343865
+          61303137356361653333323632373236303735303234393265303065353862306336373864353938
+          3937663165396330360a663964343838613636666366343131363836633133323538613166633731
+          38643762323030666638633136383330653434643964643337666235383163636434
+
+
+

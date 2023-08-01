@@ -1,0 +1,5 @@
+---
+letsencrypt_base_directory: "/etc/letsencrypt/"
+letsencrypt_live_directory: "{{ letsencrypt_base_directory }}live/"
+letsencrypt_archive_directory: "{{ letsencrypt_base_directory }}archive/"
+letsencrypt_renewal_directory: "{{ letsencrypt_base_directory }}renewal/"

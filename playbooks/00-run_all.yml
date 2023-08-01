@@ -1,0 +1,8 @@
+---
+- import_playbook: 01-node_setup.yml
+- import_playbook: 02-node_exporter.yml
+- import_playbook: 03-docker.yml
+- import_playbook: 04-nfs_mounts.yml
+- import_playbook: 05-certbot.yml
+- import_playbook: 06-docker_services.yml
+- import_playbook: 07-runners_setup.yml

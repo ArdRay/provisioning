@@ -1,0 +1,7 @@
+- name: include nfs_mounts
+  hosts:
+    - services_nprod
+  any_errors_fatal: true
+  gather_facts: false
+  roles:
+    - nfs_mounts

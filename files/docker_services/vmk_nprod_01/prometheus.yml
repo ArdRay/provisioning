@@ -1,0 +1,27 @@
+## Managed by Ansible
+## Filename: files/docker_services/vmk_nprod_01/prometheus.yml
+
+global:
+  scrape_interval:     15s
+  evaluation_interval: 15s
+
+scrape_configs:
+  - job_name: 'docker_daemon_metrics'
+    static_configs:
+      - targets: ['10.10.2.11:9323', '10.10.2.12:9323', '10.10.2.13:9323', '10.10.2.14:9323']
+
+  - job_name: 'dns_metrics'
+    static_configs:
+      - targets: ['dns:4000', '10.10.2.12:4000', '10.10.2.13:4000', '10.10.2.14:4000']
+  
+  - job_name: 'haproxy_metrics'
+    static_configs:
+      - targets: ['haproxy:9090', '10.10.2.12:9090', '10.10.2.13:9090', '10.10.2.14:9090']
+
+  - job_name: 'node_metrics'
+    static_configs:
+      - targets: ['10.10.2.11:9100', '10.10.2.12:9100', '10.10.2.13:9100', '10.10.2.14:9100']
+
+  - job_name: 'electrs_metrics'
+    static_configs:
+      - targets: ['10.10.2.13:4224']

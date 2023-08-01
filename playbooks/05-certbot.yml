@@ -1,0 +1,10 @@
+---
+
+- name: include certbot
+  hosts:
+    - services_nprod
+  become: true
+  any_errors_fatal: True
+  gather_facts: false
+  roles:
+    - certbot

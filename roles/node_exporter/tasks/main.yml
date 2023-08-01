@@ -1,0 +1,55 @@
+---
+- name: register - node_exporter version
+  ansible.builtin.command: /usr/local/bin/node_exporter --version | grep 'version {{ packages.node_exporter }}'
+  register: node_exporter_version_check
+  ignore_errors: true
+  changed_when: false
+
+- name: Install node_exporter
+  block:
+    - name: Download node_exporter
+      ansible.builtin.unarchive:
+        src: https://github.com/prometheus/node_exporter/releases/download/v{{ packages.node_exporter }}/node_exporter-{{ packages.node_exporter }}.linux-amd64.tar.gz
+        dest: /tmp
+        remote_src: true
+
+    - name: mode node_exporter to /usr/local/bin
+      ansible.builtin.copy:
+        src: /tmp/node_exporter-{{ packages.node_exporter }}.linux-amd64/node_exporter
+        dest: /usr/local/bin/node_exporter
+        remote_src: true
+  when: packages.node_exporter is defined and node_exporter_version_check is defined and node_exporter_version_check.rc != 0
+
+- name: node_exporter - perms
+  ansible.builtin.file:
+    path: /usr/local/bin/node_exporter
+    owner: root
+    group: root
+    mode: 755
+
+- name: user - node_exporter
+  ansible.builtin.user:
+    name: node_exporter
+    shell: /sbin/nologin
+    create_home: false
+    system: true
+
+- name: copy - /etc/systemd/system/node_exporter.service
+  ansible.builtin.copy:
+    src: node_exporter.service
+    dest: /etc/systemd/system/node_exporter.service
+  notify:
+    - daemon-reload
+
+- name: copy - /etc/sysconfig/node_exporter
+  ansible.builtin.copy:
+    src: node_exporter_options
+    dest: /etc/sysconfig/node_exporter
+  notify:
+    - restart node_exporter.service
+
+- name: service - node_exporter
+  ansible.builtin.systemd:
+    name: node_exporter.service
+    state: started
+    enabled: true

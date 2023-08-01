@@ -1,0 +1,12 @@
+- name: include node_setup
+  hosts:
+    - services_nprod
+    - runners_prod
+  handlers:
+    - import_tasks: "{{ playbook_dir }}/../handlers/docker_iptables.yml"
+  become: true
+  any_errors_fatal: true
+  gather_facts: false
+  roles:
+    - node_setup
+    - iptables

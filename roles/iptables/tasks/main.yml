@@ -1,0 +1,10 @@
+---
+- name: include 01-install_iptables.yml
+  include_tasks: 01-install_iptables.yml
+  when: lookup('vars', inventory_hostname).install_iptables is defined
+- name: include 02-with_docker.yml
+  include_tasks: 02-with_docker.yml
+  when: lookup('vars', inventory_hostname).install_iptables.docker_support is defined and (lookup('vars', inventory_hostname).install_iptables.docker_support | bool)
+- name: include 03-cloudflare.yml
+  include_tasks: 03-cloudflare.yml
+  when: lookup('vars', inventory_hostname).install_iptables.cloudflare_support is defined and (lookup('vars', inventory_hostname).install_iptables.cloudflare_support | bool)

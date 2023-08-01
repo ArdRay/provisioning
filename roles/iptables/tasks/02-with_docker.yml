@@ -1,0 +1,9 @@
+---
+- name: upload file - /etc/sysconfig/iptables_docker_reload
+  ansible.builtin.copy:
+    src: iptables_docker_reload
+    dest: /etc/sysconfig/iptables_docker_reload
+  notify:
+    - restart iptables.service
+    - reload iptables_docker_reload
+    - restart docker.service

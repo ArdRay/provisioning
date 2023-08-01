@@ -1,0 +1,23 @@
+---
+- name: upload repo file - /etc/yum.repos.d/runner_gitlab-runner.repo
+  ansible.builtin.copy:
+    src: runner_gitlab-runner.repo
+    dest: /etc/yum.repos.d/runner_gitlab-runner.repo
+    mode: 0644
+  notify:
+    - dnf update_cache
+
+- name: install gitlab_runner
+  ansible.builtin.dnf:
+    name: gitlab-runner
+    state: latest
+
+- name: Copy config.toml
+  vars:
+    local_file: "{{ playbook_dir }}/../templates/gitlab_runner/{{ inventory_hostname }}/config.toml.j2"
+  template:
+    src: "{{ playbook_dir }}/../templates/gitlab_runner/{{ inventory_hostname }}/config.toml.j2"
+    dest: /etc/gitlab-runner/config.toml
+  when: lookup( 'file', local_file, errors='ignore' )
+  notify:
+    - restart gitlab-runner.service

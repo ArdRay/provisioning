@@ -1,0 +1,103 @@
+## Managed by Ansible
+## Filename: templates/docker_compose/vmk_nprod_04/docker-compose.yml
+
+version: '3.8'
+services:
+  haproxy:
+    image: docker.io/library/haproxy:2.9-dev-bullseye
+    networks:
+      - dashboard
+      - nextcloud
+    restart: always
+    ports:
+      - "443:443"
+      - "9090:9090"
+    volumes:
+      - /opt/services/files/haproxy.cfg:/usr/local/etc/haproxy/haproxy.cfg:ro
+      - /mnt/prod_04_services/certs:/usr/local/etc/certs:ro
+
+  dashboard:
+    image: docker.io/linuxserver/heimdall:2.5.6
+    networks:
+      - dashboard
+    environment:
+      PUID: 1000
+      PGID: 1000
+      TZ: Europe/Berlin
+    volumes:
+      - /mnt/prod_04_services/dashboard_service:/config
+    healthcheck:
+      test: curl -fSs http://127.0.0.1:80 || exit 1
+      interval: 5s
+      timeout: 10s
+    restart: always
+    cpus: 1
+    mem_limit: 512m
+    mem_reservation: 128m
+
+  dns:
+    image: docker.io/spx01/blocky:v0.21
+    networks:
+      - dns
+    ports:
+      - "53:53/tcp"
+      - "53:53/udp"
+      - "4000:4000"
+    volumes:
+      - /opt/services/shared/dns.yml:/app/config.yml
+    environment:
+      - TZ=Europe/Berlin
+    restart: always
+    cpus: 0.5
+    mem_limit: 128m
+    mem_reservation: 64m
+
+  nextcloud:
+    image: lscr.io/linuxserver/nextcloud:27.0.0
+    container_name: nextcloud
+    networks:
+      - nextcloud
+    environment:
+      - PUID=1000
+      - PGID=1000
+      - TZ=Europe/Berlin
+    volumes:
+      - /mnt/prod_04_services/nextcloud_service:/config
+      - /mnt/nextcloud:/data
+    healthcheck:
+      test: curl --insecure --fail "https://localhost:443/login" || exit 1
+      interval: 2m
+      retries: 10
+      start_period: 10m
+      timeout: 5s
+    restart: always
+
+  nextcloud_db:
+    image: docker.io/mariadb:11
+    container_name: nextcloud_db
+    command: --transaction-isolation=READ-COMMITTED --binlog-format=ROW --innodb-file-per-table=1 --skip-innodb-read-only-compressed
+    networks:
+      - nextcloud
+    volumes:
+      - /mnt/prod_04_services/nextcloud_db_service:/var/lib/mysql
+    environment:
+      - MYSQL_ROOT_PASSWORD={{ nextcloud_db_root_password }}
+      - MYSQL_PASSWORD={{ nextcloud_db_password }}
+      - MYSQL_DATABASE=nextcloud
+      - MYSQL_USER=nextcloud_user
+    restart: always
+
+  nextcloud_redis:
+    image: redis:7
+    container_name: nextcloud_redis
+    networks:
+      - nextcloud
+    restart: always
+
+networks:
+  dashboard:
+    driver: bridge
+  dns:
+    driver: bridge
+  nextcloud:
+    driver: bridge

@@ -1,0 +1,11 @@
+---
+
+- name: setup gitlab runners
+  hosts:
+    - runners_prod
+  become: true
+  any_errors_fatal: True
+  gather_facts: false
+  roles:
+    - gitlab_runner
+  

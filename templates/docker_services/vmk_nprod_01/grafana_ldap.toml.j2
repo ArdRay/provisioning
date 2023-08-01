@@ -1,0 +1,35 @@
+## Managed by Ansible
+## Filename: templates/docker_services/vmk_nprod_01/grafana_ldap.toml.j2
+
+[[servers]]
+host = "ldap.jumpcloud.com"
+port = 636
+use_ssl = true
+start_tls = false
+ssl_skip_verify = false
+
+bind_dn = "uid=ldap_bind,ou=Users,o=61bf289f1a51782a988f555b,dc=jumpcloud,dc=com"
+bind_password = "{{ ldap_bind_password }}"
+
+search_filter = "(&(uid=%s)(objectClass=person))"
+search_base_dns = ["o=61bf289f1a51782a988f555b,dc=jumpcloud,dc=com"]
+
+[servers.attributes]
+member_of = "memberOf"
+email =  "mail"
+username = "uid"
+name = "givenName"
+surname = "sn"
+
+[[servers.group_mappings]]
+group_dn = "cn=admin,ou=Users,o=61bf289f1a51782a988f555b,dc=jumpcloud,dc=com"
+org_role = "Admin"
+grafana_admin = true
+
+[[servers.group_mappings]]
+group_dn = "cn=dev,ou=Users,o=61bf289f1a51782a988f555b,dc=jumpcloud,dc=com"
+org_role = "Editor"
+
+[[servers.group_mappings]]
+group_dn = "cn=user,ou=Users,o=61bf289f1a51782a988f555b,dc=jumpcloud,dc=com"
+org_role = "Viewer"

@@ -1,0 +1,15 @@
+---
+  - name: ensure mount destination is mounted
+    command: mountpoint -q {{ nfs_mounts.dataset_mount_destination }}
+    register: is_mounted
+    failed_when: false
+    changed_when: false
+    become: true
+
+  - name: create dir - sub directories
+    ansible.builtin.file:
+      path: "{{ item }}"
+      state: directory
+    loop: "{{ nfs_mounts.create_subfolders }}"
+    when: "nfs_mounts.create_subfolders is defined and is_mounted.rc == 0"
+    become: true

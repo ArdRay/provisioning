@@ -1,0 +1,26 @@
+## Managed by Ansible
+## Filename: templates/gitlab_runner/vmk_run_01/config.toml.j2
+
+concurrent = 5
+check_interval = 0
+shutdown_timeout = 0
+
+[session_server]
+  session_timeout = 1800
+
+[[runners]]
+  name = "vmk-run-01"
+  url = "https://gitlab.com"
+  id = {{ runner_1_id }}
+  token = "{{ runner_1_token }}"
+  token_obtained_at = 2023-06-13T21:06:06Z
+  token_expires_at = 0001-01-01T00:00:00Z
+  executor = "docker"
+  [runners.docker]
+    tls_verify = false
+    image = "alpine:latest"
+    privileged = false
+    disable_entrypoint_overwrite = true
+    oom_kill_disable = false
+    disable_cache = true
+    shm_size = 0

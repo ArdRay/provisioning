@@ -1,0 +1,14 @@
+---
+- name: reload iptables_docker_reload
+  ansible.builtin.command: bash /etc/sysconfig/iptables_docker_reload
+
+- name: restart docker.service
+  ansible.builtin.service:
+    name: docker.service
+    state: restarted
+  run_once: true
+
+- name: restart iptables.service
+  ansible.builtin.service:
+    name: iptables.service
+    state: restarted

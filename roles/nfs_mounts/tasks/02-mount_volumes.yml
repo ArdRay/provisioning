@@ -1,0 +1,19 @@
+---
+  - name: create dir - mount directories
+    ansible.builtin.file:
+      path: "{{ item.dataset_mount_destination }}"
+      state: directory
+    loop: "{{ lookup('vars', inventory_hostname).nfs_mounts  | list }}"
+    when: lookup('vars', inventory_hostname).nfs_mounts is defined
+    become: true
+
+  - name: Mount volumes
+    ansible.posix.mount:
+      src: "{{ truenas_host }}:{{ item.dataset_mount_source }}"
+      path: "{{ item.dataset_mount_destination }}"
+      opts: rw,async
+      state: "{{ item.dataset_state }}"
+      fstype: nfs
+    loop: "{{ lookup('vars', inventory_hostname).nfs_mounts  | list }}"
+    when: lookup('vars', inventory_hostname).nfs_mounts is defined
+    become: true

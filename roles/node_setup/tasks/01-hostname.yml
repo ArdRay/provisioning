@@ -1,0 +1,6 @@
+---
+- name: Set the hostname
+  ansible.builtin.hostname:
+    name: "{{ lookup('vars', inventory_hostname).hostname }}"
+    use: systemd
+  when: lookup('vars', inventory_hostname).hostname is defined

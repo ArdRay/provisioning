@@ -1,0 +1,21 @@
+---
+- name: issue certificates
+  ansible.builtin.command: /usr/bin/certbot certonly --dns-cloudflare --dns-cloudflare-credentials \
+    /opt/certbot/cloudflare.ini -d {{ item }} -m ard@pm.me \
+    --dns-cloudflare-propagation-seconds 55 \
+    --agree-tos --no-eff-email
+  args:
+    creates: "/etc/letsencrypt/live/{{ item }}"
+  with_items:
+    - "{{ lookup('vars', inventory_hostname).domain_certificates.fqdns }}"
+  loop_control:
+    pause: 5
+
+- name: haproxy format - concatenate private key + fullchain
+  ansible.builtin.shell: "cat {{letsencrypt_live_directory}}{{ item }}/privkey.pem \
+    {{letsencrypt_live_directory}}{{ item }}/fullchain.pem > \
+    {{ lookup('vars', inventory_hostname).domain_certificates.destination }}/{{ item }}"
+  args: 
+    creates: "{{ lookup('vars', inventory_hostname).domain_certificates.destination }}/{{ item }}"
+  with_items:
+    - "{{ lookup('vars', inventory_hostname).domain_certificates.fqdns }}"

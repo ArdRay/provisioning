@@ -1,0 +1,30 @@
+---
+# - name: Lock package versions
+  # community.general.dnf_versionlock:
+  #   name:
+  #     - certbot-2.6.0
+  #     - python3-certbot-dns-cloudflare-2.6.0
+  #   state: present
+
+- name: Install certbot
+  ansible.builtin.package:
+    name:
+      - certbot-2.6.0
+      - python3-certbot-dns-cloudflare-2.6.0
+    state: present
+
+- name: create dir - /opt/certbot
+  ansible.builtin.file:
+    path: /opt/certbot
+    state: directory
+
+- name: create dir - certificate destination dir
+  ansible.builtin.file:
+    path: "{{ lookup('vars', inventory_hostname).domain_certificates.destination }}"
+    state: directory
+
+- name: upload file - cloudflare.ini
+  ansible.builtin.copy:
+    src: cloudflare.ini
+    dest: /opt/certbot/cloudflare.ini
+    mode: 0600

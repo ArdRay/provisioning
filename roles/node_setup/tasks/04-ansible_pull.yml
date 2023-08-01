@@ -1,0 +1,16 @@
+---
+- name: create dir - /opt/ansible
+  ansible.builtin.file:
+    path: /opt/ansible
+    state: directory
+
+- name: .vault file exists
+  ansible.builtin.stat:
+    path: /opt/ansible/.vault
+  register: vault_passfile
+
+- name: transfer .vault if doesnt exist
+  ansible.builtin.copy:
+    src: "{{ playbook_dir }}/../.vault"
+    dest: /opt/ansible/.vault
+  when: not vault_passfile.stat.exists

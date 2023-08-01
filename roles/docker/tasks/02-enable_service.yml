@@ -1,0 +1,6 @@
+---
+- name: Ensure docker.service is enabled and running
+  ansible.builtin.systemd: 
+    name: docker.service
+    enabled: true
+    state: started

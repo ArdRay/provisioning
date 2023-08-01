@@ -1,0 +1,11 @@
+---
+- block:
+  - name: include 01-install_certbot.yml
+    include_tasks: 01-install_certbot.yml
+  - name: include 02-issue_certificates.yml
+    include_tasks: 02-issue_certificates.yml
+  - name: include 03-renew_certificates.yml
+    include_tasks: 03-renew_certificates.yml
+  - name: include 04-remove_unmanaged_certificates.yml
+    include_tasks: 04-remove_unmanaged_certificates.yml
+  when: lookup('vars', inventory_hostname).domain_certificates is defined

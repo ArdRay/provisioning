@@ -1,0 +1,25 @@
+---
+- name: Install ipset
+  ansible.builtin.package:
+    name:
+      - "ipset == {{ packages.ipset }}"
+    state: present
+  when: packages.ipset is defined
+
+- name: create directory - /etc/cron.scripts
+  ansible.builtin.file:
+    name: /etc/cron.scripts
+    state: directory
+
+- name: upload file - /etc/cron.scripts/fetch_cf4.sh
+  ansible.builtin.template:
+    src: fetch_cf4.sh.j2
+    dest: /etc/cron.scripts/fetch_cf4.sh
+
+- name: cron.d - /etc/cron.scripts/fetch_cf4.sh
+  ansible.builtin.cron:
+    name: execute - /etc/cron.scripts/fetch_cf4.sh
+    minute: "*/10"
+    user: root
+    job: "/usr/bin/bash /etc/cron.scripts/fetch_cf4.sh"
+    cron_file: ansible_execute_fetch_cf4.sh

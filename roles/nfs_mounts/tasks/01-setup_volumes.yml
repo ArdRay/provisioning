@@ -1,0 +1,44 @@
+---
+- block:
+  - name: dataset | GET - Get dataset
+    uri:
+      method: GET
+      url: "{{ truenas_api_url }}/pool/dataset/id/{{ item.dataset | regex_replace('/','%2F')}}"
+      return_content: true
+      body_format: json
+      headers:
+        Content-Type: application/json
+        Authorization: 'Bearer {{ truenas_api_key }}'
+    register: fetch_dataset
+    ignore_errors: true
+    delegate_to: localhost
+    loop: "{{ lookup('vars', inventory_hostname).nfs_mounts | list }}"
+
+  - name: dataset | POST - Create dataset
+    uri:
+      method: POST
+      url: "{{ truenas_api_url + '/pool/dataset' }}"
+      return_content: true
+      body_format: json
+      headers:
+        Content-Type: application/json
+        Authorization: 'Bearer {{ truenas_api_key }}'
+      body: '{"name":"{{ item.dataset }}"}'
+    when: fetch_dataset.results[0].status != 200
+    delegate_to: localhost
+    loop: "{{ lookup('vars', inventory_hostname).nfs_mounts | list }}"
+
+  - name: dataset | POST - Share NFS dataset
+    uri:
+      method: POST
+      url: "{{ truenas_api_url + '/sharing/nfs' }}"
+      body_format: json
+      return_content: true
+      headers:
+        Content-Type: application/json
+        Authorization: 'Bearer {{ truenas_api_key }}'
+      body: '{"path":"{{ item.dataset_mount_source }}","networks":["10.10.2.2/24"]}'
+    ignore_errors: true
+    delegate_to: localhost
+    loop: "{{ lookup('vars', inventory_hostname).nfs_mounts | list }}"
+  when: lookup('vars', inventory_hostname).nfs_mounts is defined

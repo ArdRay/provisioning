@@ -152,6 +152,14 @@ vmk_nprod_04:
       dataset_mount_source: "/mnt/hdd_raidz1/nextcloud"
       dataset_mount_destination: "/mnt/nextcloud"
       dataset_state: "mounted"
+    - dataset: "hdd_raidz1/audiobooks"
+      dataset_mount_source: "/mnt/hdd_raidz1/audiobooks"
+      dataset_mount_destination: "/mnt/audiobooks"
+      dataset_state: "mounted"
+    - dataset: "hdd_raidz1/ebooks"
+      dataset_mount_source: "/mnt/hdd_raidz1/ebooks"
+      dataset_mount_destination: "/mnt/ebooks"
+      dataset_state: "mounted"
 
 vmk_run_01:
   hostname: "vmk-run-01"

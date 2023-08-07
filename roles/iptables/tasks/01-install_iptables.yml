@@ -33,7 +33,7 @@
     - restart iptables.service
     - reload iptables_docker_reload
 
-- name: upload iptables file - /etc/sysconfig/iptables
+- name: upload iptables file
   vars:
     local_file: "{{ playbook_dir }}/../files/iptables/iptables@{{ inventory_hostname }}"
   ansible.builtin.copy:

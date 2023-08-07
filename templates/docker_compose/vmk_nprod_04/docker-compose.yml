@@ -64,6 +64,8 @@ services:
     volumes:
       - /mnt/prod_04_services/nextcloud_service:/config
       - /mnt/nextcloud:/data
+      - /mnt/audiobooks:/mounted_audiobooks
+      - /mnt/ebooks:/mounted_ebooks
     healthcheck:
       test: curl --insecure --fail "https://localhost:443/login" || exit 1
       interval: 2m

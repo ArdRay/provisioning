@@ -176,7 +176,7 @@ services:
     environment: 
       - LOG_LEVEL=info
       - TZ=Europe/London
-    restart: unless-stopped
+    restart: always
 
   dns:
     image: docker.io/spx01/blocky:v0.21

@@ -31,6 +31,11 @@ services:
       - POSTGRES_USER=postgres
       - POSTGRES_DB=portfolio
       - POSTGRES_PASSWORD={{ compose_postgres_portfolio_password }}
+    healthcheck:
+      test: ["CMD-SHELL", "sh -c 'pg_isready -U $POSTGRES_USER -d $POSTGRES_DB'"]
+      interval: 10s
+      timeout: 3s
+      retries: 3
     cpus: 2
     mem_limit: 512m
     mem_reservation: 64m
@@ -77,6 +82,7 @@ services:
     ports:
       - "53:53/tcp"
       - "53:53/udp"
+      - "4000:4000"
     volumes:
       - /opt/services/shared/dns.yml:/app/config.yml
     environment:

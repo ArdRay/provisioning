@@ -8,8 +8,13 @@
   vars:
     ansible_network_os: routeros
     ansible_user: admin
+    configs_to_apply: [dhcp-static, dns-static, firewall-address-list, firewall-filter]
   
   any_errors_fatal: True
   gather_facts: false
-  roles:
-    - mikrotik
+  tasks:
+    - include_role: 
+        name: mikrotik
+      with_items:
+        - "{{ configs_to_apply }}"
+  

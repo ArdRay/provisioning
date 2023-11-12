@@ -1,0 +1,26 @@
+---
+# - name: Show config
+#   routeros_command:
+#     commands: /ip/address export
+#   register: ip_address_output
+
+# - name: Display facts
+#   debug:
+#     var: ip_address_output
+  
+- name: Send firewall-filter.rsc script
+  command: scp "{{ playbook_dir }}/../roles/mikrotik/files/firewall-filter.rsc" ard@{{ansible_host}}:/firewall-filter.rsc
+  delegate_to: localhost
+
+- name: Apply firewall-filter.rsc
+  routeros_command:
+    commands: /import firewall-filter.rsc
+  register: firewall_filter_output
+
+- name: Display firewall_filter_output
+  debug:
+    var: firewall_filter_output
+
+- name: Remove firewall-filter.rsc
+  routeros_command:
+    commands: "/file remove firewall-filter.rsc"

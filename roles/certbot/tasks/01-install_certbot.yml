@@ -1,11 +1,4 @@
 ---
-# - name: Lock package versions
-  # community.general.dnf_versionlock:
-  #   name:
-  #     - certbot-2.6.0
-  #     - python3-certbot-dns-cloudflare-2.6.0
-  #   state: present
-
 - name: Install certbot
   ansible.builtin.package:
     name:

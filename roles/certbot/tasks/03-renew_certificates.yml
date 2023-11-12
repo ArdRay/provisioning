@@ -1,3 +1,11 @@
 ---
 - name: renew certificates
-  ansible.builtin.shell: "/usr/bin/certbot renew"
+  ansible.builtin.shell: "/usr/bin/certbot renew --dns-cloudflare-propagation-seconds 55"
+
+- name: haproxy format - concatenate private key + fullchain
+  ansible.builtin.shell: "cat {{letsencrypt_live_directory}}{{ item }}/privkey.pem \
+    {{letsencrypt_live_directory}}{{ item }}/fullchain.pem > \
+    {{ lookup('vars', inventory_hostname).domain_certificates.destination }}/{{ item }}"
+  with_items:
+    - "{{ lookup('vars', inventory_hostname).domain_certificates.fqdns }}"
+  

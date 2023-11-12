@@ -1,0 +1,15 @@
+---
+
+- name: setup Mikrotik router
+  hosts:
+    - mikrotik
+  connection: network_cli
+  
+  vars:
+    ansible_network_os: routeros
+    ansible_user: admin
+  
+  any_errors_fatal: True
+  gather_facts: false
+  roles:
+    - mikrotik

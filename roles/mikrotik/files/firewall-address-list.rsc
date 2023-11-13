@@ -18,3 +18,5 @@ add address=192.88.99.0/24 comment=RFC3068 list=not_in_internet
 add address=10.10.1.198 comment="Auri's MacOS" list=allowed_to_services
 add address=10.10.1.172 comment=AndroidTV list=allowed_to_services
 add address=10.10.1.178 comment=IoT_Camera list=no_internet_access
+add address=10.10.2.12 comment=Media_services list=home_services
+add address=10.10.2.14 comment=Cloud_services list=home_services

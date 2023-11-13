@@ -21,7 +21,7 @@ add action=accept chain=forward comment="defconf: accept established,related, un
 add action=accept chain=forward comment="foward ICMP" protocol=icmp
 add action=accept chain=forward connection-state=new comment="Allow VLAN200 to VLAN100" in-interface=VLAN200 out-interface=VLAN100
 add action=accept chain=forward connection-state=new comment="Allow VLAN300 to LAN" in-interface=VLAN300 out-interface-list=LAN
-add action=accept chain=forward connection-state=new comment="Allow 'allowed_to_services' to VLAN200 media services" dst-address=10.10.2.12 dst-port=80,443 src-address-list=allowed_to_services protocol=tcp
+add action=accept chain=forward connection-state=new comment="Allow 'allowed_to_services' to VLAN200 media services" dst-address-list=home_services dst-port=80,443 src-address-list=allowed_to_services protocol=tcp
 add action=accept chain=forward connection-state=new comment="Allow access to the Internet" in-interface-list=LAN out-interface-list=WAN
 add action=log chain=forward log=yes log-prefix="FORWARD (BEFORE) DROP: "
 add action=drop chain=forward
